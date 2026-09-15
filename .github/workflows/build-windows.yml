@@ -1,0 +1,40 @@
+name: Build Windows EXE V6
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Download source
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check Python version
+        run: python --version
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Install Tesseract OCR
+        shell: powershell
+        run: |
+          choco install tesseract --yes --no-progress
+          Copy-Item "C:\Program Files\Tesseract-OCR" ".\tesseract" -Recurse
+
+      - name: Build V6 single EXE
+        shell: cmd
+        run: build_windows.bat
+
+      - name: Upload V6 EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: 서류검증-Windows-v6
+          path: dist/서류검증.exe
+          if-no-files-found: error
